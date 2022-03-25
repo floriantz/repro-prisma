@@ -1,0 +1,12 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = "mysql://user:password@localhost:3306/database"
+}
+
+model repro {
+  id String @id @default(dbgenerated("(uuid())")) @db.VarChar(255)
+}
