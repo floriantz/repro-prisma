@@ -34,7 +34,7 @@ Requires docker installed.
 
 To test the different behaviour, change the prisma version between `3.8.1` and `3.11.0`.
 
-`npm i && npx npx prisma generate --schema prisma/schema.prisma`
+`npm i && npx prisma generate --schema prisma/schema.prisma`
 
 ### Running the script
 
