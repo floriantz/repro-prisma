@@ -2,7 +2,7 @@
 
 ## Issue
 
-The issue happened on mysql8+ and the behaviour changed somewhere between prisma `3.8.4` and `3.11.0`.
+The issue happened on mysql8+ and the behaviour changed somewhere between prisma `3.8.1` and `3.11.0`.
 
 For a given table of this structure:
 ````sql
@@ -17,7 +17,7 @@ When creating a new row with prisma create where we provide the id directly:
     const created = await client.repro.create({data: {uuid()});
 ```
 
-In `3.8.4`, the id will be the one we set explicitely
+In `3.8.1`, the id will be the one we set explicitely
 In `3.11.0`, prisma will ignore the id, and let the DB generate one.
 
 I haven't seen anything in the changelogs documenting this change and this led to some hard to debug issues when bumping Prisma.
@@ -32,7 +32,7 @@ Requires docker installed.
 
 ### Node project setup
 
-To test the different behaviour, change the prisma version between `3.8.4` and `3.11.0`.
+To test the different behaviour, change the prisma version between `3.8.1` and `3.11.0`.
 
 `npm i && npx npx prisma generate --schema prisma/schema.prisma`
 
