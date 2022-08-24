@@ -2,25 +2,50 @@
 
 ## Issue
 
-The issue happened on mysql8+ and the behaviour changed somewhere between prisma `3.8.4` and `3.11.0`.
+The issue happened on postgresql and the behaviour changed somewhere between prisma `3.15.2` and `4.2.1`.
 
 For a given table of this structure:
 ````sql
 CREATE TABLE repro(
-    `id` varchar(255) NOT NULL DEFAULT (UUID()),
-    PRIMARY KEY(id)
+    `id` UUIN NOT NULL PRIMARY KEY,
 )
 ````
 
-When creating a new row with prisma create where we provide the id directly:
+When querying a list of rows using an IN query clause like so:
 ```typescript
-    const created = await client.repro.create({data: {uuid()});
+   const rows = await this.prismaClient.$queryRaw<
+    { id: string }[]
+    >(Prisma.sql`
+      SELECT id
+      FROM repro
+      WHERE id IN (${Prisma.join(ids)});
+    `)
 ```
 
-In `3.8.4`, the id will be the one we set explicitely
-In `3.11.0`, prisma will ignore the id, and let the DB generate one.
+This worked fine in `3.15.2` but returns a type error in `4.2.1`:
+```json
+{
+  "code": "P2010",
+  "clientVersion": "4.2.1",
+  "meta": {
+    "code": "42883",
+    "message": "db error: ERROR: operator does not exist: uuid = text\nHINT: No operator matches the given name and argument types. You might need to add explicit type casts."
+  }
+}
+```
 
-I haven't seen anything in the changelogs documenting this change and this led to some hard to debug issues when bumping Prisma.
+This query works on the other hand:
+```typescript
+   const rows = await this.prismaClient.$queryRaw<
+    { id: string }[]
+    >(Prisma.sql`
+      SELECT id
+      FROM repro
+      WHERE id = ANY (ARRAY[${Prisma.join(ids)}]::uuid[]);
+    `)
+```
+
+I haven't seen what would cause this in the upgrade guide and it does look like a regression to me.
 
 ## Installation
 
@@ -28,16 +53,10 @@ Requires docker installed.
 
 ### Database setup
 
-`docker compose up -d && ./migrate.sh`
-
-### Node project setup
-
-To test the different behaviour, change the prisma version between `3.8.4` and `3.11.0`.
-
-`npm i && npx npx prisma generate --schema prisma/schema.prisma`
+`docker compose up -d && npx prisma migrate dev`
 
 ### Running the script
 
 `npx ts-node main`
 
-The provided id and created id should be the same.
+We should not get an error for the first query.

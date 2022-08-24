@@ -3,10 +3,10 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
-  url      = "mysql://user:password@localhost:3306/database"
+  provider = "postgres"
+  url      = "postgres://postgres:postgres@localhost:5432/postgres"
 }
 
 model repro {
-  id String @id @default(dbgenerated("(uuid())")) @db.VarChar(255)
+  id String @id @db.Uuid
 }
